@@ -66,11 +66,9 @@ class ttkTimer(Thread):
 
 
 class Player(Tk.Frame):
-    """The main window has to deal with events.
-    """
 
     def __init__(self, parent, title=None):
-
+        self.lastValue = ''
         Tk.Frame.__init__(self, parent)
 
         self.parent = parent
@@ -78,17 +76,6 @@ class Player(Tk.Frame):
         if title == None:
             title = "tk_vlc"
         self.parent.title(title)
-
-        '''
-        menubar = Tk.Menu(self.parent)
-        self.parent.config(menu=menubar)
-
-        
-        fileMenu = Tk.Menu(menubar)
-        fileMenu.add_command(label="Open", underline=0, command=self.OnOpen)
-        fileMenu.add_command(label="Exit", underline=1, command=_quit)
-        menubar.add_cascade(label="File", menu=fileMenu)
-        '''
 
         style = ttk.Style()
         style.configure("BW.TLabel", foreground="black", background="white")
@@ -110,16 +97,9 @@ class Player(Tk.Frame):
         # pause.pack(side=Tk.LEFT)
         # play.pack(side=Tk.LEFT)
         # stop.pack(side=Tk.LEFT)
-        load.pack(side=Tk.LEFT)
+        # load.pack(side=Tk.LEFT)
         loadB.pack(side=Tk.LEFT)
-        '''
-        self.volume_var = Tk.IntVar()
-        self.volslider = Tk.Scale(ctrlpanel, variable=self.volume_var, command=self.volume_sel,
-                                  from_=0, to=100, orient=Tk.HORIZONTAL, length=100)
-        self.volslider.pack(side=Tk.LEFT)
-        
-        '''
-        ctrlpanel.pack(side=Tk.BOTTOM)
+
         ctrlpanel2 = ttk.Frame(self.parent, style="BW.TLabel")
         self.scale_var = Tk.DoubleVar()
         self.timeslider_last_val = ""
@@ -127,11 +107,18 @@ class Player(Tk.Frame):
                                    from_=0, to=1000, orient=Tk.HORIZONTAL, length=500)
         self.timeslider.pack(side=Tk.BOTTOM, fill=Tk.X, expand=1)
         self.timeslider_last_update = time.time()
-        ctrlpanel2.pack(side=Tk.BOTTOM, fill=Tk.X)
+
+        # ctrlpanel.pack(side=Tk.BOTTOM)
+        #ctrlpanel2.pack(side=Tk.BOTTOM, fill=Tk.X)
 
         # VLC player controls
         self.Instance = vlc.Instance()
         self.player = self.Instance.media_player_new()
+        self.player.video_set_scale(0)
+        self.player.video_set_aspect_ratio('16:9')
+        self.player.video_set_deinterlace('on')
+
+        # self.player.set_fullscreen(True)
 
         # below is a test, now use the File->Open file menu
         media = self.Instance.media_new(video)
@@ -240,11 +227,13 @@ class Player(Tk.Frame):
         dbl = tyme * 0.001
         self.timeslider_last_val = ("%.0f" % dbl) + ".0"
 
-        print(str(tyme) + " / " + str(length))
+        print(str(tyme) + " / " + str(self.lastValue))
 
-        if(tyme >= length):
+        if(tyme == self.lastValue):
             print("NEW PLAY")
             self.OnLoad()
+
+        self.lastValue = tyme
 
         # don't want to programatically change slider while user is messing with it.
         # wait 2 seconds after user lets go of slider
@@ -294,9 +283,20 @@ def _quit():
 if __name__ == "__main__":
     # Create a Tk.App(), which handles the windowing system event loop
     root = Tk_get_root()
+
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
     root.protocol("WM_DELETE_WINDOW", _quit)
     root.configure(background='#000000')
-    root.attributes("-fullscreen", True)
+    root. attributes('-type', 'dock')
+
+    height = round(9 * screen_width / 16)
+
+    top = round(screen_height - height / 2)
+    print('TOP: ' + str(top))
+    #root.attributes("-fullscreen", True)
+    root.geometry(str(screen_width)+"x"+str(height)+"+0+0")
 
     player = Player(root, title="tkinter vlc")
     # show the player window centred and run the application
