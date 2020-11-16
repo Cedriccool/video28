@@ -1,4 +1,8 @@
 # import external libraries
+'''
+mv ~/.config/pulse ~/.config/pulse.old
+pulseaudio --start
+'''
 import vlc
 import sys
 
@@ -24,7 +28,8 @@ if os.environ.get('DISPLAY', '') == '':
 
 
 video = "/home/pi/Python/video28/movie1.mp4"
-video2 = "/home/pi/Python/video28/movie2.mp4"
+video2 = "/home/pi/Python/video28/jingle.mp4"
+video_temp = "/home/pi/Python/video28/temp.mp4"
 
 currentVideo = ''
 
@@ -67,6 +72,15 @@ class ttkTimer(Thread):
 
 class Player(Tk.Frame):
 
+    def pressedOne(self, event):
+        print("pressedOne")
+        self.OnOpenB()
+
+    def pressedTwo(self, event):
+        print("pressedTwo")
+        # exit()
+        _quit()
+
     def __init__(self, parent, title=None):
         self.lastValue = ''
         Tk.Frame.__init__(self, parent)
@@ -83,9 +97,14 @@ class Player(Tk.Frame):
         # The second panel holds controls
         self.player = None
         self.videopanel = ttk.Frame(self.parent, style="BW.TLabel")
-        # self.videopanel.config(bg="white")
+        # self.videopanel.config(bg="black")
         self.canvas = Tk.Canvas(self.videopanel).pack(fill=Tk.BOTH, expand=1)
         self.videopanel.pack(fill=Tk.BOTH, expand=1)
+
+        #frame = ttk.Frame(root, width=1000, height=1000)
+
+        self.videopanel.bind("<Button-1>", self.pressedOne)
+        self.videopanel.bind("<Double-Button-1>", self.pressedTwo)
 
         ctrlpanel = ttk.Frame(self.parent, style="BW.TLabel")
         pause = ttk.Button(ctrlpanel, text="Pause", command=self.OnPause)
@@ -112,8 +131,9 @@ class Player(Tk.Frame):
         #ctrlpanel2.pack(side=Tk.BOTTOM, fill=Tk.X)
 
         # VLC player controls
-        self.Instance = vlc.Instance()
+        self.Instance = vlc.Instance('--no-xlib --verbose=0')
         self.player = self.Instance.media_player_new()
+        self.player.audio_set_volume(100)
         self.player.video_set_scale(0)
         self.player.video_set_aspect_ratio('16:9')
         self.player.video_set_deinterlace('on')
@@ -167,7 +187,7 @@ class Player(Tk.Frame):
     def OnOpen(self):
         self.OnStop()
 
-        fullname = video
+        fullname = video_temp
         currentVideo = fullname
 
         if os.path.isfile(fullname):
@@ -227,7 +247,7 @@ class Player(Tk.Frame):
         dbl = tyme * 0.001
         self.timeslider_last_val = ("%.0f" % dbl) + ".0"
 
-        print(str(tyme) + " / " + str(self.lastValue))
+        print(str(tyme) + " / " + str(self.lastValue) + " : " + str(length))
 
         if(tyme == self.lastValue):
             print("NEW PLAY")
@@ -297,6 +317,8 @@ if __name__ == "__main__":
     print('TOP: ' + str(top))
     #root.attributes("-fullscreen", True)
     root.geometry(str(screen_width)+"x"+str(height)+"+0+0")
+
+    root.configure(bg='black')
 
     player = Player(root, title="tkinter vlc")
     # show the player window centred and run the application
