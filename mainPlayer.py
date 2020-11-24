@@ -77,7 +77,8 @@ class Player(Tk.Frame):
 
     def pressedOne(self, event):
         print("pressedOne")
-        self.blackFrame.place(x=0)
+        # temp self.blackFrame.place(x=0)
+        self.blackFrame.place(x=6000)
         # time.sleep(0.5)
         self.OnOpenB()
 
@@ -101,7 +102,7 @@ class Player(Tk.Frame):
         self.parent.title(title)
 
         style = ttk.Style()
-        style.configure("BW.TLabel", foreground="black", background="black")
+        style.configure("BW.TLabel", foreground="white", background="white")
 
         # The second panel holds controls
         self.player = None
@@ -125,6 +126,8 @@ class Player(Tk.Frame):
         self.blackFrame = ttk.Frame(self.parent, style="BW.TLabel")
         self.blackFrame.place(
             x=0, y=0, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
+        # temp
+        self.blackFrame.place(x=6000)
 
         self.blackFrame.bind("<Button-1>", self.pressedOne)
 
@@ -162,6 +165,8 @@ class Player(Tk.Frame):
         self.Close()
 
     def getDistance(self):
+        return 500
+
         # set Trigger to HIGH
         GPIO.output(GPIO_TRIGGER, True)
 
@@ -287,16 +292,19 @@ class Player(Tk.Frame):
         print(currentVideo)
 
         if(tyme > 700):
-            self.blackFrame.place(x=root.winfo_screenwidth())
+            # TEMP self.blackFrame.place(x=root.winfo_screenwidth())
+            self.blackFrame.place(x=6000)
 
         if(distance < minDistance and currentVideo == '/home/pi/Python/video28/temp.mp4'):
             print("NEW PLAY DISTANCE")
-            self.blackFrame.place(x=0)
+            # self.blackFrame.place(x=0)
+            self.blackFrame.place(x=6000)
             self.OnLoadB()
 
         if(tyme == self.lastValue):
             print("NEW PLAY")
-            self.blackFrame.place(x=0)
+            # self.blackFrame.place(x=0)
+            self.blackFrame.place(x=6000)
             self.OnLoad()
 
         self.lastValue = tyme

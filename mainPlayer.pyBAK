@@ -1,11 +1,16 @@
-# import external libraries
-'''
-mv ~/.config/pulse ~/.config/pulse.old
-pulseaudio --start
-'''
-
 import vlc
 import sys
+import RPi.GPIO as GPIO
+import os
+import pathlib
+from threading import Timer, Thread, Event
+import time
+import platform
+
+global minDistance, distance, currentVideo
+distance = 1000000
+minDistance = 30
+
 
 if sys.version_info[0] < 3:
     import Tkinter as Tk
@@ -16,19 +21,24 @@ else:
     from tkinter import ttk
     from tkinter.filedialog import askopenfilename
 
-# import standard libraries
-import os
-import pathlib
-from threading import Timer, Thread, Event
-import time
-import platform
+
+GPIO.cleanup()
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO_TRIGGER = 18
+GPIO_ECHO = 24
+
+# set GPIO direction (IN / OUT)
+GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
+GPIO.setup(GPIO_ECHO, GPIO.IN)
+
 
 if os.environ.get('DISPLAY', '') == '':
     print('no display found. Using :0.0')
     os.environ.__setitem__('DISPLAY', ':0.0')
 
 
-video = "/home/pi/Python/video28/movie1.mp4"
+video = "/home/pi/Python/video28/temp.mp4"
 video2 = "/home/pi/Python/video28/jingle.mp4"
 video_temp = "/home/pi/Python/video28/temp.mp4"
 
@@ -59,25 +69,18 @@ class ttkTimer(Thread):
     def get(self):
         return self.iters
 
-# def doit():
-#    print("hey dude")
-
-# code to demo ttkTimer
-#t = ttkTimer(doit, 1.0)
-# t.start()
-# time.sleep(5)
-#print("t.get= ", t.get())
-# t.stop()
-#print("timer should be stopped now")
-
 
 class Player(Tk.Frame):
+    global minDistance, distance, currentVideo
+
+    distance = 10000000
 
     def pressedOne(self, event):
         print("pressedOne")
-        self.blackFrame.place(x=0)
+        # self.blackFrame.place(x=0)
         # time.sleep(0.5)
-        self.OnOpenB()
+        # self.OnOpenB()
+        # _quit()
 
     def pressedTwo(self, event):
         print("pressedTwo")
@@ -85,8 +88,12 @@ class Player(Tk.Frame):
         _quit()
 
     def __init__(self, parent, title=None):
+        global minDistance
+
         self.lastValue = ''
         Tk.Frame.__init__(self, parent)
+
+        #minDistance = 50
 
         self.parent = parent
 
@@ -118,14 +125,10 @@ class Player(Tk.Frame):
 
         self.blackFrame = ttk.Frame(self.parent, style="BW.TLabel")
         self.blackFrame.place(
-            x=0, y=0, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
+            x=800000, y=0, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
 
         self.blackFrame.bind("<Button-1>", self.pressedOne)
 
-        # pause.pack(side=Tk.LEFT)
-        # play.pack(side=Tk.LEFT)
-        # stop.pack(side=Tk.LEFT)
-        # load.pack(side=Tk.LEFT)
         loadB.pack(side=Tk.LEFT)
 
         ctrlpanel2 = ttk.Frame(self.parent, style="BW.TLabel")
@@ -136,9 +139,6 @@ class Player(Tk.Frame):
         self.timeslider.pack(side=Tk.BOTTOM, fill=Tk.X, expand=1)
         self.timeslider_last_update = time.time()
 
-        # ctrlpanel.pack(side=Tk.BOTTOM)
-        #ctrlpanel2.pack(side=Tk.BOTTOM, fill=Tk.X)
-
         # VLC player controls
         self.Instance = vlc.Instance('--no-xlib --verbose=0')
         self.player = self.Instance.media_player_new()
@@ -147,17 +147,15 @@ class Player(Tk.Frame):
         self.player.video_set_aspect_ratio('16:9')
         self.player.video_set_deinterlace('on')
 
-        # self.player.set_fullscreen(True)
-
         # below is a test, now use the File->Open file menu
         media = self.Instance.media_new(video)
         self.player.set_media(media)
-        # self.player.play()  # hit the player button
-        # self.player.video_set_deinterlace(str_to_bytes('yadif'))
 
         self.timer = ttkTimer(self.OnTimer, 0.5)
         self.timer.start()
         self.parent.update()
+
+        self.OnPlay()
 
         # self.player.set_hwnd(self.GetHandle()) # for windows, OnOpen does does this
 
@@ -166,8 +164,37 @@ class Player(Tk.Frame):
         """
         self.Close()
 
-    def OnOpenB(self):
+    def getDistance(self):
+        # set Trigger to HIGH
+        GPIO.output(GPIO_TRIGGER, True)
 
+        # set Trigger after 0.01ms to LOW
+        time.sleep(0.00001)
+        GPIO.output(GPIO_TRIGGER, False)
+
+        StartTime = time.time()
+        StopTime = time.time()
+
+        while GPIO.input(GPIO_ECHO) == 0:
+            StartTime = time.time()
+
+        while GPIO.input(GPIO_ECHO) == 1:
+            StopTime = time.time()
+
+        TimeElapsed = StopTime - StartTime
+        distance = (TimeElapsed * 34300) / 2
+
+        return distance
+
+    def checkDistance(self):
+        global distance
+        distance = self.getDistance()
+
+        #root.after(500, self.checkDistance)
+
+    def OnOpenB(self):
+        print("OnOpenB")
+        global currentVideo
         self.OnStop()
 
         fullname = video2
@@ -194,6 +221,8 @@ class Player(Tk.Frame):
             # self.volslider.set(self.player.audio_get_volume())
 
     def OnOpen(self):
+        print("OnOpen")
+        global currentVideo
         self.OnStop()
 
         fullname = video_temp
@@ -249,21 +278,30 @@ class Player(Tk.Frame):
         dbl = length * 0.001
         self.timeslider.config(to=dbl)
 
-        # update the time on the slider
         tyme = self.player.get_time()
         if tyme == -1:
             tyme = 0
         dbl = tyme * 0.001
         self.timeslider_last_val = ("%.0f" % dbl) + ".0"
 
-        print(str(tyme) + " / " + str(self.lastValue) + " : " + str(length))
+        # print(str(tyme) + " / " + str(self.lastValue) + " : " + str(length))
+
+        self.checkDistance()
+
+        print(str(distance) + " / " + str(minDistance))
+        print(currentVideo)
 
         if(tyme > 700):
             self.blackFrame.place(x=root.winfo_screenwidth())
 
+        if(distance < minDistance and currentVideo == '/home/pi/Python/video28/temp.mp4'):
+            print("NEW PLAY DISTANCE")
+            self.blackFrame.place(x=800000)
+            self.OnLoadB()
+
         if(tyme == self.lastValue):
             print("NEW PLAY")
-            self.blackFrame.place(x=0)
+            self.blackFrame.place(x=800000)
             self.OnLoad()
 
         self.lastValue = tyme
@@ -335,4 +373,6 @@ if __name__ == "__main__":
 
     player = Player(root, title="tkinter vlc")
     # show the player window centred and run the application
+
+    #root.after(1000, player.checkDistance)
     root.mainloop()
