@@ -77,8 +77,8 @@ class Player(Tk.Frame):
 
     def pressedOne(self, event):
         print("pressedOne")
-        # temp self.blackFrame.place(x=0)
-        self.blackFrame.place(x=6000)
+        self.blackFrame.place(x=0)
+        # self.blackFrame.place(x=6000)
         # time.sleep(0.5)
         self.OnOpenB()
 
@@ -102,7 +102,7 @@ class Player(Tk.Frame):
         self.parent.title(title)
 
         style = ttk.Style()
-        style.configure("BW.TLabel", foreground="white", background="white")
+        style.configure("BW.TLabel", foreground="red", background="red")
 
         # The second panel holds controls
         self.player = None
@@ -125,9 +125,9 @@ class Player(Tk.Frame):
 
         self.blackFrame = ttk.Frame(self.parent, style="BW.TLabel")
         self.blackFrame.place(
-            x=0, y=0, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
+            x=0, y=200, width=root.winfo_screenwidth()/2, height=root.winfo_screenheight())
         # temp
-        self.blackFrame.place(x=6000)
+        # self.blackFrame.place(x=6000)
 
         self.blackFrame.bind("<Button-1>", self.pressedOne)
 
@@ -284,35 +284,31 @@ class Player(Tk.Frame):
         dbl = tyme * 0.001
         self.timeslider_last_val = ("%.0f" % dbl) + ".0"
 
-        # print(str(tyme) + " / " + str(self.lastValue) + " : " + str(length))
-
         self.checkDistance()
 
-        print(str(distance) + " / " + str(minDistance))
-        print(currentVideo)
+        #print(str(distance) + " / " + str(minDistance))
+        print(tyme)
 
-        if(tyme > 700):
-            # TEMP self.blackFrame.place(x=root.winfo_screenwidth())
-            self.blackFrame.place(x=6000)
+        if(tyme > 10500 and currentVideo == '/home/pi/Python/video28/temp.mp4'):
+            self.blackFrame.place(x=0)
+
+        if(tyme > 500):
+            self.blackFrame.place(x=root.winfo_screenwidth())
+            # self.blackFrame.place(x=6000)
 
         if(distance < minDistance and currentVideo == '/home/pi/Python/video28/temp.mp4'):
             print("NEW PLAY DISTANCE")
-            # self.blackFrame.place(x=0)
-            self.blackFrame.place(x=6000)
+            self.blackFrame.place(x=0)
+            # self.blackFrame.place(x=6000)
             self.OnLoadB()
 
         if(tyme == self.lastValue):
             print("NEW PLAY")
-            # self.blackFrame.place(x=0)
-            self.blackFrame.place(x=6000)
+            self.blackFrame.place(x=0)
+            # self.blackFrame.place(x=6000)
             self.OnLoad()
 
         self.lastValue = tyme
-
-        # don't want to programatically change slider while user is messing with it.
-        # wait 2 seconds after user lets go of slider
-        if time.time() > (self.timeslider_last_update + 2.0):
-            self.timeslider.set(dbl)
 
     def scale_sel(self, evt):
         if self.player == None:
@@ -372,7 +368,7 @@ if __name__ == "__main__":
     #root.attributes("-fullscreen", True)
     root.geometry(str(screen_width)+"x"+str(height)+"+0+0")
 
-    root.configure(bg='black')
+    root.configure(bg='white')
 
     player = Player(root, title="tkinter vlc")
     # show the player window centred and run the application
