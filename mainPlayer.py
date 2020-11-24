@@ -46,8 +46,6 @@ currentVideo = ''
 
 
 class ttkTimer(Thread):
-    """a class serving same function as wxTimer... but there may be better ways to do this
-    """
 
     def __init__(self, callback, tick):
         Thread.__init__(self)
@@ -71,9 +69,10 @@ class ttkTimer(Thread):
 
 
 class Player(Tk.Frame):
-    global minDistance, distance, currentVideo
+    global minDistance, distance, currentVideo, isCached
 
     distance = 10000000
+    isCached = True
 
     def pressedOne(self, event):
         print("pressedOne")
@@ -88,7 +87,9 @@ class Player(Tk.Frame):
         _quit()
 
     def __init__(self, parent, title=None):
-        global minDistance
+        global minDistance, isCached
+
+        isCached = True
 
         self.lastValue = ''
         Tk.Frame.__init__(self, parent)
@@ -153,7 +154,7 @@ class Player(Tk.Frame):
         media = self.Instance.media_new(video)
         self.player.set_media(media)
 
-        self.timer = ttkTimer(self.OnTimer, 0.5)
+        self.timer = ttkTimer(self.OnTimer, 1)
         self.timer.start()
         self.parent.update()
 
@@ -195,7 +196,8 @@ class Player(Tk.Frame):
         #root.after(500, self.checkDistance)
 
     def OnOpenB(self):
-        global currentVideo
+        global currentVideo, isCached
+        isCached = True
         self.OnStop()
 
         fullname = video2
@@ -222,7 +224,8 @@ class Player(Tk.Frame):
             # self.volslider.set(self.player.audio_get_volume())
 
     def OnOpen(self):
-        global currentVideo
+        global currentVideo, isCached
+        isCached = True
         self.OnStop()
 
         fullname = video_temp
@@ -269,8 +272,8 @@ class Player(Tk.Frame):
         self.timeslider.set(0)
 
     def OnTimer(self):
-        """Update the time slider according to the current movie time.
-        """
+        global isCached
+
         if self.player == None:
             return
 
@@ -289,24 +292,38 @@ class Player(Tk.Frame):
         #print(str(distance) + " / " + str(minDistance))
         print(tyme)
 
-        if(tyme > 10500 and currentVideo == '/home/pi/Python/video28/temp.mp4'):
+        if(tyme > 11000 and currentVideo == '/home/pi/Python/video28/temp.mp4' and isCached == False):
+            isCached = True
             self.blackFrame.place(x=0)
+            # self.OnLoad()
 
-        if(tyme > 500):
-            self.blackFrame.place(x=root.winfo_screenwidth())
-            # self.blackFrame.place(x=6000)
+        # if(tyme > 900 and isCached == True and tyme < 6000):
+        if(tyme > 700 and tyme < 6000):
+            isCached = False
+            self.blackFrame.place(x=root.winfo_screenwidth()/3)
 
         if(distance < minDistance and currentVideo == '/home/pi/Python/video28/temp.mp4'):
             print("NEW PLAY DISTANCE")
+            isCached = True
             self.blackFrame.place(x=0)
-            # self.blackFrame.place(x=6000)
             self.OnLoadB()
+
+        # if(tyme > 700 and isCached == True):
+        #    print("NEW PLAY")
+        #    isCached = True
+        #    self.blackFrame.place(x=0)
+        #    self.OnLoad()
 
         if(tyme == self.lastValue):
             print("NEW PLAY")
-            self.blackFrame.place(x=0)
-            # self.blackFrame.place(x=6000)
+            #isCached == True
             self.OnLoad()
+        # if(tyme == self.lastValue):
+        #    print("NEW PLAY")
+        #    isCached = True
+        #    self.blackFrame.place(x=0)
+        #    # self.blackFrame.place(x=6000)
+        #    self.OnLoad()
 
         self.lastValue = tyme
 
@@ -366,9 +383,9 @@ if __name__ == "__main__":
     top = round(screen_height - height / 2)
     print('TOP: ' + str(top))
     #root.attributes("-fullscreen", True)
-    root.geometry(str(screen_width)+"x"+str(height)+"+0+0")
+    root.geometry(str(screen_width)+"x"+str(height)+"+0+100")
 
-    root.configure(bg='white')
+    root.configure(bg='red')
 
     player = Player(root, title="tkinter vlc")
     # show the player window centred and run the application
