@@ -54,7 +54,6 @@ class ttkTimer(Thread):
     def __init__(self, callback, tick):
         Thread.__init__(self)
         self.callback = callback
-        #print("callback= ", callback())
         self.stopFlag = Event()
         self.tick = tick
         self.iters = 0
@@ -63,7 +62,6 @@ class ttkTimer(Thread):
         while not self.stopFlag.wait(self.tick):
             self.iters += 1
             self.callback()
-            #print("ttkTimer start")
 
     def stop(self):
         self.stopFlag.set()
@@ -77,6 +75,10 @@ class Player(Tk.Frame):
 
     distance = 10000000
     isCached = True
+
+    def pressedRight(self, event):
+        print("pressedRight")
+        _quit()
 
     def pressedOne(self, event):
         print("pressedOne")
@@ -119,6 +121,7 @@ class Player(Tk.Frame):
         #frame = ttk.Frame(root, width=1000, height=1000)
 
         self.videopanel.bind("<Button-1>", self.pressedOne)
+        self.videopanel.bind("<Button-3>", self.pressedRight)
         self.videopanel.bind("<Double-Button-1>", self.pressedTwo)
 
         ctrlpanel = ttk.Frame(self.parent, style="BW.TLabel")
@@ -135,6 +138,7 @@ class Player(Tk.Frame):
         # self.blackFrame.place(x=6000)
 
         self.blackFrame.bind("<Button-1>", self.pressedOne)
+        self.blackFrame.bind("<Button-3>", self.pressedRight)
 
         loadB.pack(side=Tk.LEFT)
 
@@ -152,7 +156,8 @@ class Player(Tk.Frame):
         self.player.audio_set_volume(100)
         self.player.video_set_scale(0)
         self.player.video_set_aspect_ratio('16:9')
-        self.player.video_set_deinterlace('on')
+
+        # self.player.video_set_deinterlace('on')
 
         # below is a test, now use the File->Open file menu
         media = self.Instance.media_new(video)
@@ -302,7 +307,7 @@ class Player(Tk.Frame):
             # self.OnLoad()
 
         # if(tyme > 900 and isCached == True and tyme < 6000):
-        if(tyme > 700 and tyme < 6000):
+        if(tyme > 550 and tyme < 6000):
             isCached = False
             self.blackFrame.place(x=root.winfo_screenwidth()/3)
 
@@ -371,6 +376,10 @@ def _quit():
     os._exit(1)
 
 
+def onKeyPress(event):
+    print('You pressed %s\n' % (event.char, ))
+
+
 if __name__ == "__main__":
     # Create a Tk.App(), which handles the windowing system event loop
     root = Tk_get_root()
@@ -388,6 +397,8 @@ if __name__ == "__main__":
     print('TOP: ' + str(top))
     #root.attributes("-fullscreen", True)
     root.geometry(str(screen_width)+"x"+str(height)+"+0+0")
+
+    root.bind('<KeyPress>', onKeyPress)
 
     root.configure(bg='red')
 
