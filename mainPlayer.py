@@ -107,7 +107,7 @@ class Player(Tk.Frame):
         self.parent.title(title)
 
         style = ttk.Style()
-        style.configure("BW.TLabel", foreground="red", background="red")
+        style.configure("BW.TLabel", foreground="white", background="white")
 
         self.player = None
         self.videopanel = ttk.Frame(self.parent, style="BW.TLabel")
@@ -146,6 +146,8 @@ class Player(Tk.Frame):
         self.player = self.Instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.video_set_scale(0)
+        #self.player.toggle_fullscreen()
+        self.player.set_fullscreen(True)
         self.player.video_set_aspect_ratio('16:9')
 
         # self.player.video_set_deinterlace('on')
@@ -294,11 +296,13 @@ class Player(Tk.Frame):
             # self.OnLoad()
 
         # if(tyme > 900 and isCached == True and tyme < 6000):
-        if(tyme > 500 and tyme < 6000):
+        if(tyme > 740 and tyme < 6000):
             isCached = False
             self.blackFrame.place(x=cachePosx)
 
-        if(distance < minDistance and currentVideo == '/home/pi/Python/video28/temp.mp4'):
+        print("distance: " + str(distance) + " / " + str(dist.minDistance))
+
+        if(distance < dist.minDistance and currentVideo == '/home/pi/Python/video28/temp.mp4'):
             print("NEW PLAY DISTANCE")
             isCached = True
             self.blackFrame.place(x=0)
@@ -389,10 +393,10 @@ if __name__ == "__main__":
 
     root.bind('<KeyPress>', onKeyPress)
 
-    root.configure(bg='red')
+    root.configure(bg='white')
 
     player = Player(root, title="tkinter vlc")
-    # show the player window centred and run the application
+    # show the player window centwhite and run the application
 
     #root.after(1000, player.checkDistance)
     root.mainloop()

@@ -3,7 +3,7 @@ import os
 
 def init():
     global minDistance
-    minDistance = 30  # en centimetres
+    minDistance = 150  # en centimetres
 
 
 init()
