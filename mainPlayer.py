@@ -142,13 +142,18 @@ class Player(Tk.Frame):
         self.timeslider_last_update = time.time()
 
         # VLC player controls
-        self.Instance = vlc.Instance('--no-xlib --verbose=0')
+#        self.Instance = vlc.Instance('--no-xlib --verbose=0')
+        self.Instance = vlc.Instance('--verbose=0')
         self.player = self.Instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.video_set_scale(0)
-        #self.player.toggle_fullscreen()
+        # self.player.toggle_fullscreen()
         self.player.set_fullscreen(True)
         self.player.video_set_aspect_ratio('16:9')
+
+        # var mediaOptions = new string[] {"input-repeat=-1"};
+
+        # self.player.SetMedia(new FileInfo(MediaFile), mediaOptions);
 
         # self.player.video_set_deinterlace('on')
 
@@ -198,7 +203,7 @@ class Player(Tk.Frame):
         isCached = True
         self.OnStop()
 
-        fullname = video2
+        fullname = video2  # == jingle
         currentVideo = fullname
 
         if os.path.isfile(fullname):
