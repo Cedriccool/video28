@@ -6,6 +6,10 @@ import pathlib
 from threading import Timer, Thread, Event
 import time
 import platform
+import dist
+
+print(' globals.minDistance')
+print(dist.minDistance)
 
 global minDistance, distance, currentVideo
 distance = 1000000
@@ -126,7 +130,7 @@ class Player(Tk.Frame):
 
         self.blackFrame = ttk.Frame(self.parent, style="BW.TLabel")
         self.blackFrame.place(
-            x=0, y=200, width=root.winfo_screenwidth()/2, height=root.winfo_screenheight())
+            x=0, y=200, width=root.winfo_screenwidth()/20, height=root.winfo_screenheight())
         # temp
         # self.blackFrame.place(x=6000)
 
@@ -383,7 +387,7 @@ if __name__ == "__main__":
     top = round(screen_height - height / 2)
     print('TOP: ' + str(top))
     #root.attributes("-fullscreen", True)
-    root.geometry(str(screen_width)+"x"+str(height)+"+0+100")
+    root.geometry(str(screen_width)+"x"+str(height)+"+0+0")
 
     root.configure(bg='red')
 
