@@ -3,26 +3,26 @@ import RPi.GPIO as GPIO
 import time
 
 
-GPIO.cleanup()
-GPIO.setwarnings(True)
+# GPIO.cleanup()
+GPIO.setwarnings(False)
 # GPIO Mode (BOARD / BCM)
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
+# GPIO.setmode(GPIO.GPIO)
 
-# set GPIO Pins
 '''
-GPIO_TRIGGER = 20
-GPIO_ECHO = 21
-'''
-
 GPIO_TRIGGER = 18
 GPIO_ECHO = 24
+'''
+
+GPIO_TRIGGER = 7
+GPIO_ECHO = 11
 
 # set GPIO direction (IN / OUT)
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 
 
-def distance():
+def calcDistance():
     # set Trigger to HIGH
     GPIO.output(GPIO_TRIGGER, True)
 
@@ -50,23 +50,14 @@ def distance():
     return distance
 
 
-while True:
-    dist = distance()
-    print("Measured Distance = %.1f cm" % dist)
-    time.sleep(0.4)
-
-if __name__ == '__main__':
-    try:
-        while True:
-            print('here')
-            dist = distance()
-            print("Measured Distance = %.1f cm" % dist)
-            time.sleep(0.4)
-
-        # Reset by pressing CTRL + C
-    except KeyboardInterrupt:
-        print("Measurement stopped by User")
-        GPIO.cleanup()
-    finally:
-        print("clean up")
-        GPIO.cleanup()  # cleanup all GPIO
+try:
+    while True:
+        dist = calcDistance()
+        print("Distance = %.1f cm" % dist)
+        time.sleep(0.5)
+except KeyboardInterrupt:
+    print("Measurement stopped by User")
+    GPIO.cleanup()
+finally:
+    print("clean up")
+    GPIO.cleanup()  # cleanup all GPIO

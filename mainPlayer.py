@@ -28,11 +28,12 @@ else:
 
 GPIO.cleanup()
 GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-GPIO_TRIGGER = 18
-GPIO_ECHO = 24
+GPIO.setmode(GPIO.BOARD)
 
-# set GPIO direction (IN / OUT)
+
+GPIO_TRIGGER = 7
+GPIO_ECHO = 11
+
 GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 
@@ -71,10 +72,12 @@ class ttkTimer(Thread):
 
 
 class Player(Tk.Frame):
-    global minDistance, distance, currentVideo, isCached
+    global minDistance, distance, currentVideo, isCached, cachePosx
 
     distance = 10000000
     isCached = True
+
+    cachePosx = 2000  # root.winfo_screenwidth()  # 450
 
     def pressedRight(self, event):
         print("pressedRight")
@@ -83,13 +86,10 @@ class Player(Tk.Frame):
     def pressedOne(self, event):
         print("pressedOne")
         self.blackFrame.place(x=0)
-        # self.blackFrame.place(x=6000)
-        # time.sleep(0.5)
         self.OnOpenB()
 
     def pressedTwo(self, event):
         print("pressedTwo")
-        # exit()
         _quit()
 
     def __init__(self, parent, title=None):
@@ -100,8 +100,6 @@ class Player(Tk.Frame):
         self.lastValue = ''
         Tk.Frame.__init__(self, parent)
 
-        #minDistance = 50
-
         self.parent = parent
 
         if title == None:
@@ -111,29 +109,22 @@ class Player(Tk.Frame):
         style = ttk.Style()
         style.configure("BW.TLabel", foreground="red", background="red")
 
-        # The second panel holds controls
         self.player = None
         self.videopanel = ttk.Frame(self.parent, style="BW.TLabel")
-        # self.videopanel.config(bg="black")
+
         self.canvas = Tk.Canvas(self.videopanel).pack(fill=Tk.BOTH, expand=1)
         self.videopanel.pack(fill=Tk.BOTH, expand=1)
-
-        #frame = ttk.Frame(root, width=1000, height=1000)
 
         self.videopanel.bind("<Button-1>", self.pressedOne)
         self.videopanel.bind("<Button-3>", self.pressedRight)
         self.videopanel.bind("<Double-Button-1>", self.pressedTwo)
 
         ctrlpanel = ttk.Frame(self.parent, style="BW.TLabel")
-        pause = ttk.Button(ctrlpanel, text="Pause", command=self.OnPause)
-        play = ttk.Button(ctrlpanel, text="Play", command=self.OnPlay)
-        stop = ttk.Button(ctrlpanel, text="Stop", command=self.OnStop)
-        load = ttk.Button(ctrlpanel, text="LoadMain", command=self.OnLoad)
         loadB = ttk.Button(ctrlpanel, text="LoadTemp", command=self.OnLoadB)
 
         self.blackFrame = ttk.Frame(self.parent, style="BW.TLabel")
         self.blackFrame.place(
-            x=0, y=200, width=root.winfo_screenwidth()/20, height=root.winfo_screenheight())
+            x=0, y=0, width=root.winfo_screenwidth(), height=root.winfo_screenheight())
         # temp
         # self.blackFrame.place(x=6000)
 
@@ -167,15 +158,11 @@ class Player(Tk.Frame):
         self.timer.start()
         self.parent.update()
 
-        # self.player.set_hwnd(self.GetHandle()) # for windows, OnOpen does does this
-
     def OnExit(self, evt):
-        """Closes the window.
-        """
         self.Close()
 
     def getDistance(self):
-        return 500
+        # return 500
 
         # set Trigger to HIGH
         GPIO.output(GPIO_TRIGGER, True)
@@ -307,9 +294,9 @@ class Player(Tk.Frame):
             # self.OnLoad()
 
         # if(tyme > 900 and isCached == True and tyme < 6000):
-        if(tyme > 550 and tyme < 6000):
+        if(tyme > 500 and tyme < 6000):
             isCached = False
-            self.blackFrame.place(x=root.winfo_screenwidth()/3)
+            self.blackFrame.place(x=cachePosx)
 
         if(distance < minDistance and currentVideo == '/home/pi/Python/video28/temp.mp4'):
             print("NEW PLAY DISTANCE")
@@ -326,6 +313,8 @@ class Player(Tk.Frame):
         if(tyme == self.lastValue):
             print("NEW PLAY")
             #isCached == True
+            isCached = True
+            self.blackFrame.place(x=0)
             self.OnLoad()
         # if(tyme == self.lastValue):
         #    print("NEW PLAY")
